@@ -37,28 +37,30 @@ class Director {
 
     sendToDev(department) {
         if (this.def_Projects.length) {
-            while (this.def_Projects.length) {
-                let i = this.def_Projects.length -1;
-                const proj = this.def_Projects[i];
+            let l = this.def_Projects.length;
+            while (l > 0) {
+                let proj = this.def_Projects[l-1];
                 if (department.direction === proj.direction) {
                     if (department.takeProject(proj)) {
                         department.addEmployee();
+                        department.takeProject(proj);
+                        this.def_Projects.splice(l-1, l-1);
                     }
-                    department.takeProject(proj);
-                    this.def_Projects.splice(i, i);
                 }
+                l--;
             }
         }else {
             if (this.new_projects.length) {
-                while (this.new_projects.length) {
-                    let n = this.new_projects.length - 1;
-                    const proj = this.new_projects[n];
+                let n = this.new_projects.length;
+                while (n > 0) {
+                    let proj = this.new_projects[n-1];
                     if (department.direction === proj.direction) {
                         if (department.takeProject(proj)) {
                             this.def_Projects.push(proj);
+                            this.new_projects.splice(n-1, n-1);
                         }
-                        this.new_projects.splice(n, n);
                     }
+                    n--;
                 }
             }
         }
@@ -67,7 +69,7 @@ class Director {
     sendToTest(test_department,department) {
         if (this.Projects_to_test.length) {
             while (this.Projects_to_test.length){
-                const old_proj = this.Projects_to_test.pop();
+                let old_proj = this.Projects_to_test.pop();
                 if (test_department.takeProject(old_proj)) {
                     test_department.addEmployee();
                 }
@@ -76,8 +78,8 @@ class Director {
         } else {
             if(department.findFinProject){
                 while (department.findFinProject()){
-                    const proj = department.findFinProject();
-                    if (test_departments.takeProject(proj)) {
+                    let proj = department.findFinProject();
+                    if (test_department.takeProject(proj)) {
                         this.Projects_to_test.push(proj);
                     }
                 }
@@ -92,9 +94,15 @@ class Director {
     }
 
     dismissEmployees(depart_1,depart_2,depart_3) {
-        department.deleteEmloyees();
-        department.deleteEmloyees();
-        department.deleteEmloyees();
+        depart_1.deleteEmloyees();
+        depart_2.deleteEmloyees();
+        depart_3.deleteEmloyees();
+    }
+
+    deleteCompletedProjects(depart_1,depart_2,depart_3){
+        depart_1.deleteProjects();
+        depart_2.deleteProjects();
+        depart_3.deleteProjects();
     }
 }
 
@@ -117,14 +125,14 @@ class Department {
     deleteEmloyees() {
         let min_exp = Infinity;
         let bad_empl;
-        for (let i = 0; e < this.Employees.length; e++) {
+        for (let e = 0; e < this.Employees.length; e++) {
             if (this.Employees[e].day_without_project == 3) {
                 if (min_exp > this.Employees[e].exp) {
                     bad_empl = e;
                 }
             }
         }
-        if (bad_empl_indx) {
+        if (bad_empl) {
             this.Employees.splice(bad_empl, bad_empl);
             this.fired_employees++;
         }
@@ -135,7 +143,7 @@ class Department {
         this.free_employees = 0;
         for (let e = 0; e < this.Employees.length; e++) {
             if (this.Employees[e].on_work == 0) {
-                this.free_employees ++ ;
+                this.free_employees++ ;
                 free_index = e;              
             }
         }
@@ -155,12 +163,12 @@ class Department {
     }
 
     takeProject(project) {
-        const proj = project;
+        let proj = project;
         let e_indx = this.findFreeEmployees();
         if (proj.direction === this.direction) {
             if (e_indx >= 0) {
                 proj.team++;
-                proj.day_to_dev = proj.complexity/proj.team;
+                proj.day_to_dev = proj.complexity / proj.team;
                 this.Projects.push(proj);
                 this.Employees[e_indx].exp++;
                 this.Employees[e_indx].day_without_project = 0, 
@@ -169,21 +177,24 @@ class Department {
                 return false;
             }
         }
-        return proj;    
+        return proj;
     }
 
     findFinProject() {
         let ind;
         for ( let fp = 0; fp < this.Projects.length; fp++) {
-            if (this.Projects[fp].day_to_dev == 0) {
+            if (this.Projects[fp].day_to_dev <= 0) {
                 ind = fp;
                 break;
             }
         }
-        const proj = this.Projects[ind];
-        this.Projects[ind].day_to_dev = -1;
-        proj.direction = "test";
-        return proj;
+        if (ind){
+            let proj = this.Projects[ind];
+            this.Projects[ind].day_to_dev--;
+            proj.direction = "test";
+            return proj;
+        }
+        return false;
     }
 
     nextDay() {
@@ -206,7 +217,7 @@ class Mob_Department extends Department {
     }
 
     takeProject(project) {
-        const proj = project;
+        let proj = project;
         let e_indx = this.findFreeEmployees();
             if (project.direction === this.direction) {
                 if(e_indx >= 0){
@@ -239,8 +250,8 @@ class Log {
         this.finished=0;
     }
     collectData(depart_test,depart_1,depart_2){ 
-        this.fired += depart_1.fired_employees + depart_2.fired_employees;
-        this.hired += depart_2.hired_employees + depart_3.hired_employees;
+        this.fired = depart_1.fired_employees + depart_2.fired_employees;
+        this.hired = depart_1.hired_employees + depart_2.hired_employees;
         this.finished = depart_test.completed_projects;
     }
 }
@@ -262,11 +273,12 @@ function LetsWork(day) {
         Boss.sendToDev(Web);
         Boss.sendToTest(Test,Mobile);
         Boss.sendToTest(Test,Web);
-        Boss.deleteEmloyees(Mobile,Web,Test);
-        Boss.newDay(Mobile,Web,Test)
-         }
+        Boss.dismissEmployees(Mobile,Web,Test);
+        Boss.deleteCompletedProjects(Mobile,Web,Test);
+        Boss.newDay(Mobile,Web,Test);
+        }
     Statistics.collectData(Test,Mobile,Web);
     console.log(Statistics);
 }
+LetsWork(6);
 
-LetsWork(5);
