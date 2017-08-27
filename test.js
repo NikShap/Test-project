@@ -15,7 +15,7 @@ class Project {
     constructor(direction, complexity) {
         this.direction = direction;
         this.complexity = complexity;
-        this.day_to_dev = 0;
+        this.day_to_dev = complexity;
         this.team = 0;
     }
 }
@@ -37,30 +37,25 @@ class Director {
 
     sendToDev(department) {
         if (this.def_Projects.length) {
-            let l = this.def_Projects.length;
-            while (l > 0) {
-                let proj = this.def_Projects[l-1];
+            for ( let i =this.def_Projects.length; i > 0; i--){
+                const proj = this.def_Projects[i-1];
                 if (department.direction === proj.direction) {
                     if (department.takeProject(proj)) {
                         department.addEmployee();
                         department.takeProject(proj);
-                        this.def_Projects.splice(l-1, l-1);
+                        this.def_Projects.splice(i-1, 1);
                     }
                 }
-                l--;
             }
-        }else {
-            if (this.new_projects.length) {
-                let n = this.new_projects.length;
-                while (n > 0) {
-                    let proj = this.new_projects[n-1];
-                    if (department.direction === proj.direction) {
-                        if (department.takeProject(proj)) {
-                            this.def_Projects.push(proj);
-                            this.new_projects.splice(n-1, n-1);
-                        }
+        }
+        if (this.new_projects.length) {
+            for (let i = this.new_projects.length; i > 0; i--) {
+                const proj = this.new_projects[i-1];
+                if (department.direction === proj.direction) {
+                    if (department.takeProject(proj)) {
+                        this.def_Projects.push(proj);
+                        this.new_projects.splice(i-1, 1);
                     }
-                    n--;
                 }
             }
         }
@@ -68,22 +63,21 @@ class Director {
 
     sendToTest(test_department,department) {
         if (this.Projects_to_test.length) {
-            while (this.Projects_to_test.length){
-                let old_proj = this.Projects_to_test.pop();
+            for (let i = this.Projects_to_test.length; i > 0; i--){
+                const old_proj = this.Projects_to_test.pop();
                 if (test_department.takeProject(old_proj)) {
                     test_department.addEmployee();
-                }
-                test_department.takeProject(old_proj);
-                }
-        } else {
-            if(department.findFinProject){
-                while (department.findFinProject()){
-                    let proj = department.findFinProject();
-                    if (test_department.takeProject(proj)) {
-                        this.Projects_to_test.push(proj);
-                    }
+                    test_department.takeProject(old_proj);
                 }
             }
+        }
+        if (department.findFinProject()) {
+            do {
+                const proj = department.findFinProject();
+                if (test_department.takeProject(proj)) {
+                    this.Projects_to_test.push(proj);
+                }
+            }while (department.findFinProject());
         }
     }
 
@@ -118,48 +112,47 @@ class Department {
     }
 
     addEmployee() {
-        this.Employees.push(new Employee);
+        this.Employees.push(new Employee());
         this.hired_employees++;
     }
 
     deleteEmloyees() {
-        let min_exp = Infinity;
-        let bad_empl;
-        for (let e = 0; e < this.Employees.length; e++) {
-            if (this.Employees[e].day_without_project == 3) {
-                if (min_exp > this.Employees[e].exp) {
-                    bad_empl = e;
+        if (this.Employees.length){
+            let min_exp = this.Employees[0].exp;
+            let bad_empl;
+            for (let i = 0; i < this.Employees.length; i++) {
+                if (this.Employees[i].day_without_project > 2) {
+                    if (min_exp > this.Employees[i].exp) {
+                        bad_empl = i;
+                    }
                 }
             }
-        }
-        if (bad_empl) {
-            this.Employees.splice(bad_empl, bad_empl);
-            this.fired_employees++;
-        }
+            if (bad_empl >= 0) {
+                this.Employees.splice(bad_empl, 1);
+                this.fired_employees++;
+            }
+        }   
     }
     
     findFreeEmployees() {
         let free_index;
         this.free_employees = 0;
-        for (let e = 0; e < this.Employees.length; e++) {
-            if (this.Employees[e].on_work == 0) {
+        for (let i = 0; i < this.Employees.length; i++) {
+            if (this.Employees[i].on_work == 0) {
                 this.free_employees++ ;
-                free_index = e;              
+                free_index = i;              
             }
         }
         return free_index;
     }
 
     deleteProjects() {
-        let p = 0;
-        while (p < this.Projects.length) {
-            if (this.Projects[p].day_to_dev <= 0) {
-                this.Projects.splice(p, p);
+        for (let i = 0; i < this.Projects.length; i++){
+            if (this.Projects[i].day_to_dev <= 0) {
+                this.Projects.splice(i--, 1);
                 this.completed_projects++;
-            } else {
-                p++;
-            }
-        }
+            } 
+        }        
     }
 
     takeProject(project) {
@@ -168,7 +161,7 @@ class Department {
         if (proj.direction === this.direction) {
             if (e_indx >= 0) {
                 proj.team++;
-                proj.day_to_dev = proj.complexity / proj.team;
+                proj.day_to_dev = Math.ceil(proj.complexity / proj.team);
                 this.Projects.push(proj);
                 this.Employees[e_indx].exp++;
                 this.Employees[e_indx].day_without_project = 0, 
@@ -177,36 +170,32 @@ class Department {
                 return false;
             }
         }
-        return proj;
+        return project;
     }
 
     findFinProject() {
-        let ind;
-        for ( let fp = 0; fp < this.Projects.length; fp++) {
-            if (this.Projects[fp].day_to_dev <= 0) {
-                ind = fp;
-                break;
+        for (let i = this.Projects.length; i > 0; i--){
+            if ((this.Projects[i-1].day_to_dev <= 0) && (this.Projects[i-1].direction !== "test")){
+                const project = this.Projects[i-1];
+                project.team = 0;
+                project.complexity = 1;
+                project.direction = "test"; 
+                return project;
             }
-        }
-        if (ind){
-            let proj = this.Projects[ind];
-            this.Projects[ind].day_to_dev--;
-            proj.direction = "test";
-            return proj;
         }
         return false;
     }
 
     nextDay() {
-        for (let emp=0; emp < this.Employees.length; emp++) {
-            if (this.Employees[emp].on_work == 0) {
-                this.Employees[emp].day_without_project++;
+        for (let i = 0; i < this.Employees.length; i++) {
+            if (this.Employees[i].on_work === 0) {
+                this.Employees[i].day_without_project++;
             } else {
-                this.Employees[emp].on_work--;
+                this.Employees[i].on_work--;
             }
         }
-        for (let prj=0; prj < this.Projects.length; prj++) {
-            this.Projects[prj].day_to_dev--;
+        for (let i = 0; i < this.Projects.length; i++) {
+            this.Projects[i].day_to_dev -= 1;
         }
     }
 }
@@ -280,5 +269,4 @@ function LetsWork(day) {
     Statistics.collectData(Test,Mobile,Web);
     console.log(Statistics);
 }
-LetsWork(6);
-
+LetsWork(10);
