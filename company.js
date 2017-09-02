@@ -4,7 +4,7 @@ function randomInteger(min, max) {
     return rand;
 }
 
-function createRandomProject(){
+function createRandomProject() {
     const cmplxt = randomInteger(1, 3);
     const d = randomInteger(0, 1);
     let drct = d ? "web" : "mobile";
@@ -37,7 +37,7 @@ class Director {
 
     sendToDev(department) {
         if (this.def_Projects.length) {
-            for ( let i =this.def_Projects.length; i > 0; i--){
+            for ( let i = this.def_Projects.length; i > 0; i--) {
                 const proj = this.def_Projects[i-1];
                 if (department.direction === proj.direction) {
                     if (department.takeProject(proj)) {
@@ -63,7 +63,7 @@ class Director {
 
     sendToTest(test_department,department) {
         if (this.Projects_to_test.length) {
-            for (let i = this.Projects_to_test.length; i > 0; i--){
+            for (let i = this.Projects_to_test.length; i > 0; i--) {
                 const old_proj = this.Projects_to_test.pop();
                 if (test_department.takeProject(old_proj)) {
                     test_department.addEmployee();
@@ -74,7 +74,7 @@ class Director {
         let proj;
         do {
             proj = department.findFinProject();
-            if (proj){
+            if (proj) {
                 if (test_department.takeProject(proj)) {
                     this.Projects_to_test.push(proj);
                 }
@@ -94,7 +94,7 @@ class Director {
         depart_3.deleteEmloyees();
     }
 
-    deleteCompletedProjects(depart_1,depart_2,depart_3){
+    deleteCompletedProjects(depart_1,depart_2,depart_3) {
         depart_1.deleteProjects();
         depart_2.deleteProjects();
         depart_3.deleteProjects();
@@ -118,7 +118,7 @@ class Department {
     }
 
     deleteEmloyees() {
-        if (this.Employees.length){
+        if (this.Employees.length) {
             let min_exp = this.Employees[0].exp;
             let bad_empl;
             for (let i = 0; i < this.Employees.length; i++) {
@@ -175,8 +175,8 @@ class Department {
     }
 
     findFinProject() {
-        for (let i = this.Projects.length; i > 0; i--){
-            if ((this.Projects[i-1].day_to_dev <= 0) && (this.Projects[i-1].direction !== "test")){
+        for (let i = this.Projects.length; i > 0; i--) {
+            if ((this.Projects[i-1].day_to_dev <= 0) && (this.Projects[i-1].direction !== "test")) {
                 const project = this.Projects[i-1];
                 project.team = 0;
                 project.complexity = 1;
@@ -202,7 +202,7 @@ class Department {
 }
 
 class Mob_Department extends Department {
-    constructor(){
+    constructor() {
         super ("mobile");
     }
 
@@ -234,12 +234,12 @@ class Mob_Department extends Department {
 }
 
 class Log {
-    constructor(){
-        this.completed=0;
-        this.hired=0;
-        this.fired=0;
+    constructor() {
+        this.completed = 0;
+        this.hired = 0;
+        this.fired = 0;
     }
-    collectData(depart_test,depart_1,depart_2){ 
+    collectData(depart_test,depart_1,depart_2) { 
         this.fired = depart_1.fired_employees + depart_2.fired_employees;
         this.hired = depart_1.hired_employees + depart_2.hired_employees;
         this.completed = depart_test.completed_projects;
