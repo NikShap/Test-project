@@ -71,14 +71,15 @@ class Director {
                 }
             }
         }
-        if (department.findFinProject()) {
-            do {
-                const proj = department.findFinProject();
+        let proj;
+        do {
+            proj = department.findFinProject();
+            if (proj){
                 if (test_department.takeProject(proj)) {
                     this.Projects_to_test.push(proj);
                 }
-            }while (department.findFinProject());
-        }
+            }
+        }while (proj);
     }
 
     newDay (depart_1,depart_2,depart_3) {
@@ -195,7 +196,7 @@ class Department {
             }
         }
         for (let i = 0; i < this.Projects.length; i++) {
-            this.Projects[i].day_to_dev -= 1;
+            this.Projects[i].day_to_dev--;
         }
     }
 }
@@ -234,18 +235,18 @@ class Mob_Department extends Department {
 
 class Log {
     constructor(){
-        this.fired=0;
+        this.completed=0;
         this.hired=0;
-        this.finished=0;
+        this.fired=0;
     }
     collectData(depart_test,depart_1,depart_2){ 
         this.fired = depart_1.fired_employees + depart_2.fired_employees;
         this.hired = depart_1.hired_employees + depart_2.hired_employees;
-        this.finished = depart_test.completed_projects;
+        this.completed = depart_test.completed_projects;
     }
 }
 
-function LetsWork(day) {
+module.exports.LetsWork = function(day) {
     let current_day = 0;
     const Boss = new Director();
     const Mobile = new Mob_Department();
@@ -267,6 +268,5 @@ function LetsWork(day) {
         Boss.newDay(Mobile,Web,Test);
         }
     Statistics.collectData(Test,Mobile,Web);
-    console.log(Statistics);
+    return JSON.stringify(Statistics);
 }
-LetsWork(10);
