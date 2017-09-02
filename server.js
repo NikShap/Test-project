@@ -1,23 +1,3 @@
-// var company = require('./test_proj')
-// var express = require('express');
-// var bodyParser = require("body-parser");
-
-// var app = express();
-// var d;
-// var urlencodedParser = bodyParser.urlencoded({extended: false});
-// app.use(express.static(__dirname + "/company"));
-
-// app.get("/", function(request, response){   
-//     response.send('')
-// });
-// app.post('/', urlencodedParser, function (req, res) {
-//     if(!req.body) return res.sendStatus(400);
-//     d = req.body.day;
-//     res.send(company.LetsWork(d))
-// });
-
-// app.listen(3000)
-
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
