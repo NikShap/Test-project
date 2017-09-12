@@ -11,8 +11,10 @@ http.createServer((req,res) => {
         strem.pipe(res);
     } if (req.url.startsWith('/statistic')) {
         const _get = url.parse(req.url, true).query;
-        const statistic = JSON.parse(company.LetsWork(_get.day));
-        res.end(`Days (${statistic.days})\nCompleted projects: ${statistic.completed}\nHired Employees: ${statistic.hired}\nFired Employees: ${statistic.fired}`);
+        const statistic = company.LetsWork(_get.day);
+        res.end(statistic);
+        //const statistic = JSON.parse(company.LetsWork(_get.day));
+        //res.end(`Days (${statistic.days})\nCompleted projects: ${statistic.completed}\nHired Employees: ${statistic.hired}\nFired Employees: ${statistic.fired}`);
     }
 
 }).listen(3000, () => console.log("server run"));

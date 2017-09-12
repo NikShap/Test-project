@@ -107,7 +107,7 @@ class Department {
         let min_exp = Infinity;
         let bad_empl;
         for (let i = 0; i < this.Employees.length; i++) {
-            if (this.Employees[i].day_without_project >= 3) {
+            if (this.Employees[i].day_without_project >= 5) {
                 if (min_exp > this.Employees[i].exp) {
                     min_exp = this.Employees[i].exp;
                     bad_empl = i;
@@ -251,7 +251,8 @@ function createRandomProject() {
     return new Project(drct,cmplxt);
 }
 
-module.exports.LetsWork = function (days) {
+//module.exports.
+const LetsWork = function (days) {
     let current_day = 0;
     const Boss = new Director();
     const Mobile = new Mob_Department();
@@ -273,3 +274,4 @@ module.exports.LetsWork = function (days) {
     Statistics.collectData(current_day,Test,Mobile,Web);
     return JSON.stringify(Statistics);
 }
+console.log(LetsWork(3000));
